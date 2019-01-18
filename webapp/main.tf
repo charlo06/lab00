@@ -10,11 +10,11 @@ data "aws_vpc" "targetVPC" {
 }
 
 
-data "aws_subnet" "mySubnet" {
+data "aws_subnet_ids" "targetSubnetIds" {
   vpc_id = "${data.aws_vpc.targetVPC.id}"
   filter = {
     name = "tag:Name"
-    values = ["mSn-0"]
+    values = ["mSn"]
   }
 }
 
@@ -40,7 +40,7 @@ data "template_file" "userData" {
 resource "aws_security_group" "sgUbuntu" {
   name        = "sgEc2"
   description = "Allow all http trafic"
-  vpc_id      = "${data.aws_subnet.mySubnet.vpc_id}"
+  vpc_id      = "${data.aws_vpc.targetVPC.id}"
 
   ingress {
     from_port   = 80
@@ -64,10 +64,11 @@ resource "aws_security_group" "sgUbuntu" {
 resource "aws_instance" "web" {
   ami                         = "${data.aws_ami.ubuntu.id}"
   instance_type               = "t2.micro"
-  subnet_id                   = "${data.aws_subnet.mySubnet.id}"
+  subnet_id                   = "${element(data.aws_subnet_ids.targetSubnetIds.ids,count.index)}"
   user_data                   = "${data.template_file.userData.rendered}"
   security_groups             = ["${aws_security_group.sgUbuntu.id}"]
   associate_public_ip_address = "true"
+  count = 2
 
   tags {
     Name = "Ubuntu"
