@@ -1,0 +1,4 @@
+.terraform
+webapp/terraform.tfvars
+webapp/terraform.tfstate
+webapp/terraform.tfstate.backup
