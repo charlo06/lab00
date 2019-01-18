@@ -2,8 +2,20 @@ provider "aws" {
   region = "${var.region}"
 }
 
+data "aws_vpc" "targetVPC" {
+  filter = {
+    name = "tag:Name"
+    values = ["mVpc"]
+  }
+}
+
+
 data "aws_subnet" "mySubnet" {
-  id = "${var.subnet_id}"
+  vpc_id = "${data.aws_vpc.targetVPC.id}"
+  filter = {
+    name = "tag:Name"
+    values = ["mSn-0"]
+  }
 }
 
 data "aws_ami" "ubuntu" {
